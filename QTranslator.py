@@ -1,6 +1,7 @@
 from deep_translator import GoogleTranslator
 from pathlib import Path
-import pyperclip, keyboard, requests, time, os
+from pynput import keyboard
+import pyperclip, requests, time, os
 
 
 class QTranslator:
@@ -8,7 +9,21 @@ class QTranslator:
         self.translator = GoogleTranslator(source='en', target='fa')
         self.output_file_path = Path('translated_text.txt')
 
-        keyboard.add_hotkey('ctrl shift a', self.clear_file)
+        self.hotkey_ctrl_shift_e = keyboard.HotKey(
+            keyboard.HotKey.parse('<ctrl>+<shift>+e'),
+            self.clear_file
+        )
+        self.listener = keyboard.Listener(
+            on_press=self.on_press,
+            on_release=self.on_release
+        )
+        self.listener.start()
+
+    def on_press(self, key):
+        self.hotkey_ctrl_shift_e.press(self.listener.canonical(key))
+    
+    def on_release(self, key):
+        self.hotkey_ctrl_shift_e.release(self.listener.canonical(key))
 
     def clear_file(self):
         os.remove(self.output_file_path)
