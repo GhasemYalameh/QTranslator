@@ -29,9 +29,9 @@ class QTranslator:
         os.remove(self.output_file_path)
         print('file removed successfully!')
 
-    def write_text_in_file(self, source_text, target_text):
+    def write_text_in_file(self, main_text, transed_text):
         """write text and translated text in output file"""
-        text = f'{source_text}\n{target_text}\n{"-"*100}\n'
+        text = f'{main_text}\n{transed_text}\n{"-"*100}\n'
 
         with open(self.output_file_path, 'a', encoding='utf-8') as f:
             f.write(text)
@@ -47,14 +47,13 @@ class QTranslator:
         except Exception as e:
             print(f'unknown error acquired.')
 
-
     def run(self):
         last_text = ''
         while 1:
             current_text = pyperclip.paste().strip() # get text from clipboard
             if current_text and current_text != last_text:
                 translated_text = self.translate(text=current_text)
-                self.write_text_in_file(source_text=current_text, target_text=translated_text)
+                self.write_text_in_file(main_text=current_text, transed_text=translated_text)
                 last_text = current_text
             time.sleep(.6)
 

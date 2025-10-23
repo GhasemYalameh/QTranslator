@@ -2,3 +2,4 @@ venv/
 translated_text.txt
 .idea/
 __pycache__/
+test.py
