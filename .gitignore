@@ -1,2 +1,4 @@
 venv/
 *.txt
+.idea/
+__pycache__/
