@@ -1,10 +1,12 @@
+import time
 import tkinter as tk
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
 from deep_translator import GoogleTranslator
 from pathlib import Path
 from pynput import keyboard
-import pyperclip, requests, time, os
+import pyperclip, requests, os
+from termcolor import colored
 
 
 class QTranslator:
@@ -31,21 +33,20 @@ class QTranslator:
         self.hotkey_ctrl_shift_e.press(self.listener.canonical(key))
         self.hotkey_exit.press(self.listener.canonical(key))
 
-    
     def on_release(self, key):
         self.hotkey_ctrl_shift_e.release(self.listener.canonical(key))
         self.hotkey_exit.release(self.listener.canonical(key))
-
 
     def clear_file(self):
         os.remove(self.output_file_path)
         print('file removed successfully!')
 
     def shut_down(self):
+        print(colored('shuting down...', 'green'))
+        time.sleep(1)
         self.listener.stop()
         self.popup.destroy()
         self.root.destroy()
-        exit()
 
     def write_text_in_file(self, main_text, transed_text):
         """write text and translated text in output file"""
@@ -94,9 +95,9 @@ class QTranslator:
             trased_text = instace.translate(text)
             return trased_text
         except requests.exceptions.ConnectionError:
-            print('please connect to internet!\a')
+            print(colored('please connect to internet!\a', 'red'))
         except Exception as e:
-            print(f'unknown error acquired.')
+            print(colored(f'unknown error acquired.', 'red'))
 
     def check_clipboard(self, last_text=''):
         current_text = pyperclip.paste().strip() # get text from clipboard
@@ -107,8 +108,21 @@ class QTranslator:
             last_text = current_text
         self.root.after(500, self.check_clipboard, last_text)
 
+    def print_help_text(self):
+        os.system('clear')
+        print('='*75)
+        print("Wellcome to QTranslator!".center(75))
+        print(f"select any English word or sentence and copy it to show farsi translation.".center(75))
+        print('='*75)
+        print('Key List:')
+        print(colored('Press "Ctrl+c" Show translation.', 'yellow'))
+        print(colored('Press "Ctrl+Shift+e" to Erase(remove) output file.', 'yellow'))
+        print(colored('Press "Ctrl+Shift+q" to quiet.\n', 'yellow'))
+        print('-'*75, '\n')
+
 
     def run(self):
+        self.print_help_text()
         self.make_withdraw_popup()
         self.check_clipboard()
         self.root.mainloop()
