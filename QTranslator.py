@@ -11,6 +11,7 @@ from termcolor import colored
 
 class QTranslator:
     def __init__(self):
+        self.current_text = ''
         self.translator = GoogleTranslator(source='en', target='fa')
         self.output_file_path = Path('translation_history.txt')
 
@@ -39,7 +40,7 @@ class QTranslator:
 
     def clear_file(self):
         os.remove(self.output_file_path)
-        print('file removed successfully!')
+        print(colored('History file removed successfully!', 'green'))
 
     def shut_down(self):
         print(colored('shuting down...', 'green'))
@@ -103,12 +104,12 @@ class QTranslator:
             print(colored(f'unknown error acquired.', 'red'))
 
     def check_clipboard(self, last_text=''):
-        current_text = pyperclip.paste().strip() # get text from clipboard
-        if current_text and current_text != last_text:
-            translated_text = self.translate(text=current_text)
-            self.write_text_in_file(main_text=current_text, transed_text=translated_text)
-            self.show_pop_up(current_text, translated_text)
-            last_text = current_text
+        self.current_text = pyperclip.paste().strip() # get text from clipboard
+        if self.current_text and self.current_text != last_text:
+            translated_text = self.translate(text=self.current_text)
+            self.write_text_in_file(main_text=self.current_text, transed_text=translated_text)
+            self.show_pop_up(self.current_text, translated_text)
+            last_text = self.current_text
         self.root.after(500, self.check_clipboard, last_text)
 
     def print_help_text(self):
@@ -119,10 +120,9 @@ class QTranslator:
         print('='*75)
         print('Key List:')
         print(colored('Press "Ctrl+c" Show translation.', 'yellow'))
-        print(colored('Press "Ctrl+Shift+e" to Erase(remove) output file.', 'yellow'))
+        print(colored('Press "Ctrl+Shift+e" to Erase(remove) History file.', 'yellow'))
         print(colored('Press "Ctrl+Shift+q" to quiet.\n', 'yellow'))
         print('-'*75, '\n')
-
 
     def run(self):
         self.print_help_text()
