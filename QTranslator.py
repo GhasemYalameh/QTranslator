@@ -69,16 +69,16 @@ class QTranslator:
         self.popup.attributes("-topmost", True)
         self.popup.configure(bg="white", padx=10, pady=10, highlightthickness=1, highlightbackground="#aaa")
 
-        self.lable_en = tk.Label(self.popup, text="", font=("Arial", 14, "bold"), bg="white", fg="#333")
+        self.lable_en = tk.Label(self.popup, text="", font=("Arial", 16, "bold"), bg="white", fg="#333")
         self.lable_en.pack(anchor='w')
+
+        self.play_sound_button = tk.Button(self.popup, text='s',font=("Arial", 8), justify='left', command=self.play_pronunciation)
+        self.play_sound_button.pack(anchor='w')
 
         tk.Frame(self.popup, height=1, bg="#ccc").pack(fill="x", pady=5)
 
-        self.lable_fa = tk.Label(self.popup, text="", font=("Vazir", 14), bg="white", fg="#222", justify="right")
-        self.lable_fa.pack(anchor='e', pady=(0, 10))
-
-        self.play_sound_button = tk.Button(self.popup, text='sound',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.play_pronunciation)
-        self.play_sound_button.pack()
+        self.lable_fa = tk.Label(self.popup, text="", font=("Vazir", 16), bg="white", fg="#222", justify="right")
+        self.lable_fa.pack(anchor='e', pady=(0, 20))
 
         self.ok_button = tk.Button(self.popup, text='Ok',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.hide_popup)
         self.ok_button.pack()
@@ -118,7 +118,6 @@ class QTranslator:
             os.remove(self.pronunciation_path)
         except:
             print(colored('Error in pronunciation.', 'red'))
-
 
     def check_clipboard(self, last_text=''):
         self.current_text = pyperclip.paste().strip() # get text from clipboard
