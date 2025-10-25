@@ -1,5 +1,5 @@
 venv/
-translated_text.txt
+translation_history.txt
 .idea/
 __pycache__/
 test.py

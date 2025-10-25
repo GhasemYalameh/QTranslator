@@ -12,7 +12,7 @@ from termcolor import colored
 class QTranslator:
     def __init__(self):
         self.translator = GoogleTranslator(source='en', target='fa')
-        self.output_file_path = Path('translated_text.txt')
+        self.output_file_path = Path('translation_history.txt')
 
         self.hotkey_ctrl_shift_e = keyboard.HotKey(
             keyboard.HotKey.parse('<ctrl>+<shift>+e'),
