@@ -70,7 +70,10 @@ class QTranslator:
         tk.Frame(self.popup, height=1, bg="#ccc").pack(fill="x", pady=5)
 
         self.lable_fa = tk.Label(self.popup, text="", font=("Vazir", 14), bg="white", fg="#222", justify="right")
-        self.lable_fa.pack(anchor='e')
+        self.lable_fa.pack(anchor='e', pady=(0, 10))
+
+        self.ok_button = tk.Button(self.popup, text='Ok',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.hide_popup)
+        self.ok_button.pack()
 
         self.popup.withdraw() # popup hided.
 
@@ -86,7 +89,7 @@ class QTranslator:
         self.popup.deiconify()
         self.popup.lift()
         self.popup.focus_force()
-        self.popup.bind("<FocusOut>", lambda e: self.hide_popup())
+        # self.popup.bind("<FocusOut>", lambda e: self.hide_popup())
 
     def translate(self, text):
         """translate text. if connection denied rases alarm."""
