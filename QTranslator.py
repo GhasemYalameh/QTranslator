@@ -3,6 +3,8 @@ import tkinter as tk
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
 from deep_translator import GoogleTranslator
+from gtts import gTTS
+from playsound import playsound
 from pathlib import Path
 from pynput import keyboard
 import pyperclip, requests, os
@@ -12,8 +14,10 @@ from termcolor import colored
 class QTranslator:
     def __init__(self):
         self.current_text = ''
-        self.translator = GoogleTranslator(source='en', target='fa')
         self.output_file_path = Path('translation_history.txt')
+        self.pronunciation_path = Path('pronunciation.mp3')
+        self.translator = GoogleTranslator(source='en', target='fa')
+        
 
         self.hotkey_ctrl_shift_e = keyboard.HotKey(
             keyboard.HotKey.parse('<ctrl>+<shift>+e'),
@@ -73,6 +77,9 @@ class QTranslator:
         self.lable_fa = tk.Label(self.popup, text="", font=("Vazir", 14), bg="white", fg="#222", justify="right")
         self.lable_fa.pack(anchor='e', pady=(0, 10))
 
+        self.play_sound_button = tk.Button(self.popup, text='sound',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.play_pronunciation)
+        self.play_sound_button.pack()
+
         self.ok_button = tk.Button(self.popup, text='Ok',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.hide_popup)
         self.ok_button.pack()
 
@@ -102,6 +109,16 @@ class QTranslator:
             print(colored('please connect to internet!\a', 'red'))
         except Exception as e:
             print(colored(f'unknown error acquired.', 'red'))
+
+    def play_pronunciation(self):
+        try:
+            tts = gTTS(text=self.current_text, lang='en', slow=False)
+            tts.save(self.pronunciation_path)
+            playsound(self.pronunciation_path)
+            os.remove(self.pronunciation_path)
+        except:
+            print(colored('Error in pronunciation.', 'red'))
+
 
     def check_clipboard(self, last_text=''):
         self.current_text = pyperclip.paste().strip() # get text from clipboard
