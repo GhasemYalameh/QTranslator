@@ -7,7 +7,7 @@ from gtts import gTTS
 from playsound import playsound
 from pathlib import Path
 from pynput import keyboard
-import pyperclip, requests, os
+import pyperclip, requests, os, sys
 from termcolor import colored
 
 
@@ -128,8 +128,14 @@ class QTranslator:
             last_text = self.current_text
         self.root.after(500, self.check_clipboard, last_text)
 
+    def clear_terminal(self):
+        if sys.platform == 'linux':
+            os.system('clear')
+        else:
+            os.system('cls')
+
     def print_help_text(self):
-        os.system('clear')
+        self.clear_terminal()
         print('='*75)
         print("Wellcome to QTranslator!".center(75))
         print(f"select any English word or sentence and copy it to show farsi translation.".center(75))
