@@ -84,9 +84,12 @@ class QTranslator:
         self.ok_button.pack()
 
         self.popup.withdraw() # popup hided.
+        self.popup.protocol('WM_DELETE_WINDOW')
+        # ------------- close by * -------------
 
     def hide_popup(self):
         self.popup.withdraw()
+        self.remove_pronunc_file()
 
     def show_pop_up(self, main_text, transed_text):
         transed_text = get_display(reshape(transed_text))
@@ -97,7 +100,6 @@ class QTranslator:
         self.popup.deiconify()
         self.popup.lift()
         self.popup.focus_force()
-        # self.popup.bind("<FocusOut>", lambda e: self.hide_popup())
 
     def translate(self, text):
         """translate text. if connection denied rases alarm."""
@@ -110,12 +112,20 @@ class QTranslator:
         except Exception as e:
             print(colored(f'unknown error acquired.', 'red'))
 
+    def remove_pronunc_file(self)->bool:
+        if os.path.exists(self.pronunciation_path):
+            os.remove(self.pronunciation_path)
+            return True
+        return False
+
     def play_pronunciation(self):
+        if os.path.exists(self.pronunciation_path):
+            playsound(self.pronunciation_path)
+            return 
         try:
             tts = gTTS(text=self.current_text, lang='en', slow=False)
             tts.save(self.pronunciation_path)
             playsound(self.pronunciation_path)
-            os.remove(self.pronunciation_path)
         except:
             print(colored('Error in pronunciation.', 'red'))
 

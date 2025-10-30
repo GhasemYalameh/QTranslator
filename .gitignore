@@ -3,3 +3,5 @@ translation_history.txt
 .idea/
 __pycache__/
 test.py
+*.mp3
+*.sh
