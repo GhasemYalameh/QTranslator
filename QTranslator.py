@@ -84,7 +84,7 @@ class QTranslator:
         self.ok_button.pack()
 
         self.popup.withdraw() # popup hided.
-        self.popup.protocol('WM_DELETE_WINDOW')
+        self.popup.protocol('WM_DELETE_WINDOW', self.hide_popup)
         # ------------- close by * -------------
 
     def hide_popup(self):
