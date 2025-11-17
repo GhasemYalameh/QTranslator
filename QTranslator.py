@@ -1,12 +1,16 @@
 import time
 import tkinter as tk
+from pynput import keyboard
+
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
+
 from deep_translator import GoogleTranslator
 from gtts import gTTS
 from playsound import playsound
+from pygame import mixer
+
 from pathlib import Path
-from pynput import keyboard
 import pyperclip, requests, os, sys
 from termcolor import colored
 
@@ -16,6 +20,8 @@ class QTranslator:
         self.current_text = ''
         self.output_file_path = Path('translation_history.txt')
         self.pronunciation_path = Path('pronunciation.mp3')
+        self.mixer = mixer.init()
+        self.is_music_playing = False
         self.translator = GoogleTranslator(source='en', target='fa')
         
 
@@ -120,14 +126,32 @@ class QTranslator:
 
     def play_pronunciation(self):
         if os.path.exists(self.pronunciation_path):
-            playsound(self.pronunciation_path)
+            # playsound(self.pronunciation_path)
+            self.play_audio(self.pronunciation_path)
             return 
         try:
             tts = gTTS(text=self.current_text, lang='en', slow=False)
             tts.save(self.pronunciation_path)
-            playsound(self.pronunciation_path)
+            # playsound(self.pronunciation_path)
+            self.play_audio(self.pronunciation_path)
+
         except:
             print(colored('Error in pronunciation.', 'red'))
+
+    def play_audio(self, file_path=None):
+        """playing pronunciation."""
+        file_path = self.pronunciation_path if not file_path else file_path
+        music = self.mixer.music
+        
+        if music.get_busy(): # stop other sounds if is playing.
+            music.stop()
+
+        music.load(file_path)
+        music.play()
+        self.is_music_playing = True
+        while music.get_busy(): # sleep since playing sound was ended.
+            time.sleep(0.1)
+        self.is_music_playing = False
 
     def check_clipboard(self, last_text=''):
         self.current_text = pyperclip.paste().strip() # get text from clipboard
