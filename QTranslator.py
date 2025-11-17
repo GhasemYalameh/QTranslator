@@ -8,7 +8,7 @@ from bidi.algorithm import get_display
 from deep_translator import GoogleTranslator
 from gtts import gTTS
 from playsound import playsound
-from pygame import mixer
+import pygame
 
 from pathlib import Path
 import pyperclip, requests, os, sys
@@ -20,7 +20,8 @@ class QTranslator:
         self.current_text = ''
         self.output_file_path = Path('translation_history.txt')
         self.pronunciation_path = Path('pronunciation.mp3')
-        self.mixer = mixer.init()
+        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+        self.mixer = pygame.mixer
         self.is_music_playing = False
         self.translator = GoogleTranslator(source='en', target='fa')
         
@@ -135,21 +136,21 @@ class QTranslator:
             # playsound(self.pronunciation_path)
             self.play_audio(self.pronunciation_path)
 
-        except:
+        except Exception as e:
             print(colored('Error in pronunciation.', 'red'))
+            print(f'error:{str(e)}')
 
     def play_audio(self, file_path=None):
         """playing pronunciation."""
         file_path = self.pronunciation_path if not file_path else file_path
-        music = self.mixer.music
-        
-        if music.get_busy(): # stop other sounds if is playing.
-            music.stop()
 
-        music.load(file_path)
-        music.play()
+        if self.mixer.music.get_busy(): # stop other sounds if is playing.
+            self.mixer.music.stop()
+
+        self.mixer.music.load(file_path)
+        self.mixer.music.play()
         self.is_music_playing = True
-        while music.get_busy(): # sleep since playing sound was ended.
+        while self.mixer.music.get_busy(): # sleep since playing sound was ended.
             time.sleep(0.1)
         self.is_music_playing = False
 
