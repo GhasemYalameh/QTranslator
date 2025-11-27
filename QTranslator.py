@@ -55,10 +55,16 @@ class QTranslator:
 
     def shut_down(self):
         print(colored('shuting down...', 'green'))
-        time.sleep(1)
-        self.listener.stop()
-        self.popup.destroy()
-        self.root.destroy()
+        try:
+            self.listener.stop()
+            if hasattr(self, 'popup'):
+                self.popup.destroy()
+            if hasattr(self, 'root'):
+                self.root.destroy()
+        except Exception as e:
+            print(colored(f'Error during shutdown: {str(e)}', 'red'))
+        finally:
+            sys.exit(0)
 
     def write_text_in_file(self, main_text, transed_text):
         """write text and translated text in output file"""
@@ -92,10 +98,12 @@ class QTranslator:
 
         self.popup.withdraw() # popup hided.
         self.popup.protocol('WM_DELETE_WINDOW', self.hide_popup)
-        # ------------- close by * -------------
 
     def hide_popup(self):
         self.popup.withdraw()
+        # if self.is_music_playing:
+        #     self.mixer.music.stop()
+        #     self.is_music_playing = False
         self.remove_pronunc_file()
 
     def show_pop_up(self, main_text, transed_text):
@@ -116,8 +124,10 @@ class QTranslator:
             return trased_text
         except requests.exceptions.ConnectionError:
             print(colored('please connect to internet!\a', 'red'))
+            return None
         except Exception as e:
             print(colored(f'unknown error acquired.', 'red'))
+            return None
 
     def remove_pronunc_file(self)->bool:
         if os.path.exists(self.pronunciation_path):
@@ -127,13 +137,11 @@ class QTranslator:
 
     def play_pronunciation(self):
         if os.path.exists(self.pronunciation_path):
-            # playsound(self.pronunciation_path)
             self.play_audio(self.pronunciation_path)
             return 
         try:
             tts = gTTS(text=self.current_text, lang='en', slow=False)
             tts.save(self.pronunciation_path)
-            # playsound(self.pronunciation_path)
             self.play_audio(self.pronunciation_path)
 
         except Exception as e:
@@ -146,20 +154,28 @@ class QTranslator:
 
         if self.mixer.music.get_busy(): # stop other sounds if is playing.
             self.mixer.music.stop()
+            time.sleep(.1)
 
-        self.mixer.music.load(file_path)
-        self.mixer.music.play()
+        try:
+            self.mixer.music.load(file_path)
+            self.mixer.music.play()
+        except Exception as e:
+            print('an error accured in play audio.', str(e))
+
         self.is_music_playing = True
         while self.mixer.music.get_busy(): # sleep since playing sound was ended.
             time.sleep(0.1)
         self.is_music_playing = False
 
+
     def check_clipboard(self, last_text=''):
         self.current_text = pyperclip.paste().strip() # get text from clipboard
         if self.current_text and self.current_text != last_text:
+            print(colored("your text recognized.", 'blue'))
             translated_text = self.translate(text=self.current_text)
-            self.write_text_in_file(main_text=self.current_text, transed_text=translated_text)
-            self.show_pop_up(self.current_text, translated_text)
+            if translated_text:
+                self.write_text_in_file(main_text=self.current_text, transed_text=translated_text)
+                self.show_pop_up(self.current_text, translated_text)
             last_text = self.current_text
         self.root.after(500, self.check_clipboard, last_text)
 
