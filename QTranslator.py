@@ -85,7 +85,7 @@ class QTranslator:
         self.lable_en = tk.Label(self.popup, text="", font=("Arial", 16, "bold"), bg="white", fg="#333")
         self.lable_en.pack(anchor='w')
 
-        self.play_sound_button = tk.Button(self.popup, text='s',font=("Arial", 8), justify='left', command=self.play_pronunciation)
+        self.play_sound_button = tk.Button(self.popup, text='s',font=("Arial", 8), justify='left', command=lambda: Thread(target=self.play_pronunciation).start())
         self.play_sound_button.pack(anchor='w')
 
         tk.Frame(self.popup, height=1, bg="#ccc").pack(fill="x", pady=5)
@@ -103,22 +103,24 @@ class QTranslator:
         self.popup.withdraw()
         self.remove_pronunc_file()
 
-    def show_pop_up(self, main_text, transed_text):
-        transed_text = get_display(reshape(transed_text))
-        self.lable_en.config(text=main_text)
-        self.lable_fa.config(text=transed_text)
+    def show_pop_up(self, en_text, fa_text):
+        fa_text = get_display(reshape(fa_text))
+        self.lable_en.config(text=en_text)
+        self.lable_fa.config(text=fa_text)
         x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
         self.popup.geometry(f"+{x+10}+{y+10}")
         self.popup.deiconify()
         self.popup.lift()
         self.popup.focus_force()
 
-    def translate(self, text):
-        """translate text. if connection denied rases alarm."""
-        instace = self.translator
+    def translate(self, en_text):
+        """translate text. if connection denied raises alarm."""
+        instance = self.translator
         try:
             trased_text = instace.translate(text)
             return trased_text
+            fa_text = instance.translate(en_text)
+            self.queue.put(('show popup', en_text, fa_text))
         except requests.exceptions.ConnectionError:
             print(colored('please connect to internet!\a', 'red'))
             return None
@@ -163,21 +165,26 @@ class QTranslator:
         except Exception as e:
             print('an error accorded in play audio.', str(e))
 
-        self.is_music_playing = True
-        while self.mixer.music.get_busy(): # sleep since playing sound was ended.
-            time.sleep(0.1)
-        self.is_music_playing = False
-
     def check_clipboard(self, last_text=''):
-        self.current_text = pyperclip.paste().strip() # get text from clipboard
-        if self.current_text and self.current_text != last_text:
+        self.clipboard_current_text = pyperclip.paste().strip() # get text from clipboard
+        if self.clipboard_current_text and self.clipboard_current_text != last_text:
             print(colored("your text recognized.", 'blue'))
-            translated_text = self.translate(text=self.current_text)
-            if translated_text:
-                self.write_text_in_file(main_text=self.current_text, transed_text=translated_text)
-                self.show_pop_up(self.current_text, translated_text)
-            last_text = self.current_text
+            Thread(target=self.translate, args=(self.clipboard_current_text,)).start()
+            last_text = self.clipboard_current_text
         self.root.after(200, self.check_clipboard, last_text)
+
+    def check_queue(self):
+        if not self.queue.empty():
+            trd_type, en_text, fa_text = self.queue.get()
+            if trd_type == 'show popup' and fa_text:
+                self.write_text_in_file(en_text, fa_text)
+                self.en_text = en_text
+                self.show_pop_up(en_text, fa_text)
+            elif trd_type == 'shutdown':
+                self.listener.stop()
+                self.root.destroy()
+                sys.exit(0)
+        self.root.after(100, self.check_queue)
 
     def clear_terminal(self):
         if sys.platform == 'linux':
