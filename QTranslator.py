@@ -17,14 +17,14 @@ from termcolor import colored
 
 class QTranslator:
     def __init__(self):
+        self.root, self.popup,self.lable_en, self.play_sound_button, self.lable_fa, self.ok_button = None
         self.current_text = ''
-        self.output_file_path = Path('translation_history.txt')
-        self.pronunciation_path = Path('pronunciation.mp3')
+        self.output_file_path = str(Path('translation_history.txt'))
+        self.pronunciation_path = str(Path('pronunciation.mp3'))
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
         self.mixer = pygame.mixer
         self.is_music_playing = False
         self.translator = GoogleTranslator(source='en', target='fa')
-        
 
         self.hotkey_ctrl_shift_e = keyboard.HotKey(
             keyboard.HotKey.parse('<ctrl>+<shift>+e'),
@@ -101,9 +101,6 @@ class QTranslator:
 
     def hide_popup(self):
         self.popup.withdraw()
-        # if self.is_music_playing:
-        #     self.mixer.music.stop()
-        #     self.is_music_playing = False
         self.remove_pronunc_file()
 
     def show_pop_up(self, main_text, transed_text):
@@ -149,7 +146,7 @@ class QTranslator:
             print(f'error:{str(e)}')
 
     def play_audio(self, file_path=None):
-        """playing pronunciation."""
+        """playing an audio."""
         file_path = self.pronunciation_path if not file_path else file_path
 
         if self.mixer.music.get_busy(): # stop other sounds if is playing.
@@ -159,14 +156,17 @@ class QTranslator:
         try:
             self.mixer.music.load(file_path)
             self.mixer.music.play()
+            while self.mixer.music.get_busy():
+                time.sleep(0.1)
+            self.mixer.music.unload()  # unload pronunciation file.
+
         except Exception as e:
-            print('an error accured in play audio.', str(e))
+            print('an error accorded in play audio.', str(e))
 
         self.is_music_playing = True
         while self.mixer.music.get_busy(): # sleep since playing sound was ended.
             time.sleep(0.1)
         self.is_music_playing = False
-
 
     def check_clipboard(self, last_text=''):
         self.current_text = pyperclip.paste().strip() # get text from clipboard
@@ -177,7 +177,7 @@ class QTranslator:
                 self.write_text_in_file(main_text=self.current_text, transed_text=translated_text)
                 self.show_pop_up(self.current_text, translated_text)
             last_text = self.current_text
-        self.root.after(500, self.check_clipboard, last_text)
+        self.root.after(200, self.check_clipboard, last_text)
 
     def clear_terminal(self):
         if sys.platform == 'linux':
