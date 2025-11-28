@@ -19,7 +19,7 @@ from termcolor import colored
 
 class QTranslator:
     def __init__(self):
-        self.root, self.popup,self.lable_en, self.play_sound_button, self.lable_fa, self.ok_button = None, None, None, None, None, None
+        self.root, self.popup,self.label_en, self.play_sound_button, self.label_fa, self.ok_button = None, None, None, None, None, None
         self.queue = queue.Queue()
         self.clipboard_current_text = ''
         self.en_text = ''
@@ -77,16 +77,16 @@ class QTranslator:
         self.popup.attributes("-topmost", True)
         self.popup.configure(bg="white", padx=10, pady=10, highlightthickness=1, highlightbackground="#aaa")
 
-        self.lable_en = tk.Label(self.popup, text="", font=("Arial", 16, "bold"), bg="white", fg="#333")
-        self.lable_en.pack(anchor='w')
+        self.label_en = tk.Label(self.popup, text="", font=("Arial", 16, "bold"), bg="white", fg="#333")
+        self.label_en.pack(anchor='w')
 
         self.play_sound_button = tk.Button(self.popup, text='s',font=("Arial", 8), justify='left', command=lambda: Thread(target=self.play_pronunciation).start())
         self.play_sound_button.pack(anchor='w')
 
         tk.Frame(self.popup, height=1, bg="#ccc").pack(fill="x", pady=5)
 
-        self.lable_fa = tk.Label(self.popup, text="", font=("Vazir", 16), bg="white", fg="#222", justify="right")
-        self.lable_fa.pack(anchor='e', pady=(0, 20))
+        self.label_fa = tk.Label(self.popup, text="", font=("Vazir", 16), bg="white", fg="#222", justify="right")
+        self.label_fa.pack(anchor='e', pady=(0, 20))
 
         self.ok_button = tk.Button(self.popup, text='Ok',font=("Arial", 14, "bold"), width=20, height=2, justify='center', command=self.hide_popup)
         self.ok_button.pack()
@@ -100,8 +100,8 @@ class QTranslator:
 
     def show_pop_up(self, en_text, fa_text):
         fa_text = get_display(reshape(fa_text))
-        self.lable_en.config(text=en_text)
-        self.lable_fa.config(text=fa_text)
+        self.label_en.config(text=en_text)
+        self.label_fa.config(text=fa_text)
         x, y = self.root.winfo_pointerx(), self.root.winfo_pointery()
         self.popup.geometry(f"+{x+10}+{y+10}")
         self.popup.deiconify()
@@ -118,7 +118,7 @@ class QTranslator:
             print(colored('please connect to internet!\a', 'red'))
             return None
         except Exception as e:
-            print(colored(f'unknown error acquired.', 'red'))
+            print(colored(f'unknown error acquired: {str(e)}', 'red'))
             return None
 
     def remove_pronunc_file(self)->bool:
@@ -144,7 +144,7 @@ class QTranslator:
         """playing an audio."""
         file_path = self.pronunciation_path if not file_path else file_path
 
-        if self.mixer.music.get_busy(): # stop other sounds if is playing.
+        if self.mixer.music.get_busy(): # stop other sounds if playing.
             self.mixer.music.stop()
             time.sleep(.1)
 
@@ -188,7 +188,7 @@ class QTranslator:
     def print_help_text(self):
         self.clear_terminal()
         print('='*75)
-        print("Wellcome to QTranslator!".center(75))
+        print("Welcome to QTranslator!".center(75))
         print(f"select any English word or sentence and copy it to show farsi translation.".center(75))
         print('='*75)
         print('Key List:')
