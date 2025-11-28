@@ -1,24 +1,28 @@
 import time
-import tkinter as tk
-from pynput import keyboard
+from threading import Thread
+import queue
 
 from arabic_reshaper import reshape
 from bidi.algorithm import get_display
 
 from deep_translator import GoogleTranslator
 from gtts import gTTS
-from playsound import playsound
 import pygame
+import tkinter as tk
+from pynput import keyboard
 
 from pathlib import Path
 import pyperclip, requests, os, sys
 from termcolor import colored
 
 
+
 class QTranslator:
     def __init__(self):
-        self.root, self.popup,self.lable_en, self.play_sound_button, self.lable_fa, self.ok_button = None
-        self.current_text = ''
+        self.root, self.popup,self.lable_en, self.play_sound_button, self.lable_fa, self.ok_button = None, None, None, None, None, None
+        self.queue = queue.Queue()
+        self.clipboard_current_text = ''
+        self.en_text = ''
         self.output_file_path = str(Path('translation_history.txt'))
         self.pronunciation_path = str(Path('pronunciation.mp3'))
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
@@ -54,21 +58,12 @@ class QTranslator:
         print(colored('History file removed successfully!', 'green'))
 
     def shut_down(self):
-        print(colored('shuting down...', 'green'))
-        try:
-            self.listener.stop()
-            if hasattr(self, 'popup'):
-                self.popup.destroy()
-            if hasattr(self, 'root'):
-                self.root.destroy()
-        except Exception as e:
-            print(colored(f'Error during shutdown: {str(e)}', 'red'))
-        finally:
-            sys.exit(0)
+        print(colored('shutting down...', 'green'))
+        self.queue.put(('shutdown', None, None,))
 
-    def write_text_in_file(self, main_text, transed_text):
+    def write_text_in_file(self, en_text, fa_text):
         """write text and translated text in output file"""
-        text = f'{main_text}\n{transed_text}\n{"-"*100}\n'
+        text = f'{en_text}\n{fa_text}\n{"-" * 100}\n'
 
         with open(self.output_file_path, 'a', encoding='utf-8') as f:
             f.write(text)
@@ -117,8 +112,6 @@ class QTranslator:
         """translate text. if connection denied raises alarm."""
         instance = self.translator
         try:
-            trased_text = instace.translate(text)
-            return trased_text
             fa_text = instance.translate(en_text)
             self.queue.put(('show popup', en_text, fa_text))
         except requests.exceptions.ConnectionError:
@@ -139,7 +132,7 @@ class QTranslator:
             self.play_audio(self.pronunciation_path)
             return 
         try:
-            tts = gTTS(text=self.current_text, lang='en', slow=False)
+            tts = gTTS(text=self.clipboard_current_text, lang='en', slow=False)
             tts.save(self.pronunciation_path)
             self.play_audio(self.pronunciation_path)
 
@@ -208,6 +201,7 @@ class QTranslator:
         self.print_help_text()
         self.make_withdraw_popup()
         self.check_clipboard()
+        self.check_queue()
         self.root.mainloop()
 
 
