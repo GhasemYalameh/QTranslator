@@ -4,4 +4,4 @@ translation_history.txt
 __pycache__/
 test.py
 *.mp3
-*.sh
+*.bat
